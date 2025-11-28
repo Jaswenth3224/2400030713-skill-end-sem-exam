@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Course List</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+        }
+        #courseList {
+            list-style: none;
+            padding: 0;
+            max-width: 300px;
+            margin: auto;
+        }
+        #courseList li {
+            padding: 10px 15px;
+            margin: 5px 0;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: grab;
+        }
+        #courseList li.dragging {
+            opacity: 0.5;
+        }
+        #updatedOrder {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Course List</h2>
+    <ul id="courseList">
+        <li draggable="true">Mathematics</li>
+        <li draggable="true">Physics</li>
+        <li draggable="true">Chemistry</li>
+        <li draggable="true">Biology</li>
+        <li draggable="true">Computer Science</li>
+    </ul>
+
+    <div id="updatedOrder">
+        <strong>Updated Order:</strong>
+        <p id="orderText">Mathematics, Physics, Chemistry, Biology, Computer Science</p>
+    </div>
+
+    <script>
+        const list = document.getElementById('courseList');
+        const orderText = document.getElementById('orderText');
+        let draggedItem = null;
+
+        list.addEventListener('dragstart', (e) => {
+            draggedItem = e.target;
+            e.target.classList.add('dragging');
+        });
+
+        list.addEventListener('dragend', (e) => {
+            e.target.classList.remove('dragging');
+            updateOrder();
+        });
+
+        list.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            const afterElement = getDragAfterElement(list, e.clientY);
+            if (afterElement == null) {
+                list.appendChild(draggedItem);
+            } else {
+                list.insertBefore(draggedItem, afterElement);
+            }
+        });
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('li:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function updateOrder() {
+            const courses = [...list.children].map(li => li.textContent);
+            orderText.textContent = courses.join(', ');
+        }
+    </script>
+
+</body>
+</html>
